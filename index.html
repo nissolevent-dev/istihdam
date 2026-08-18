@@ -307,6 +307,42 @@ function renderResults() {
   }
   html += '</tbody></table></div>';
   document.getElementById('resultsArea').innerHTML = html;
+  applyStickyColumns(5);
+}
+
+function applyStickyColumns(n) {
+  const table = document.querySelector('#resultsArea table');
+  if (!table) return;
+  const theadRow = table.querySelector('thead tr');
+  const tbodyRows = table.querySelectorAll('tbody tr');
+  if (!theadRow) return;
+  const headerCells = Array.from(theadRow.children);
+  const count = Math.min(n, headerCells.length);
+
+  const offsets = [];
+  let acc = 0;
+  for (let i = 0; i < count; i++) {
+    offsets.push(acc);
+    acc += headerCells[i].getBoundingClientRect().width;
+  }
+
+  const styleCell = (cell, i, bg, z) => {
+    cell.style.position = 'sticky';
+    cell.style.left = offsets[i] + 'px';
+    cell.style.zIndex = z;
+    cell.style.background = bg;
+    cell.style.boxShadow = (i === count - 1) ? '2px 0 4px -2px rgba(0,0,0,0.5), 1px 0 0 var(--line)' : '';
+  };
+
+  for (let i = 0; i < count; i++) styleCell(headerCells[i], i, 'var(--surface2)', 3);
+
+  tbodyRows.forEach((row, ri) => {
+    const bg = (ri % 2 === 1) ? 'var(--surface)' : 'var(--ink)';
+    for (let i = 0; i < count; i++) {
+      const cell = row.children[i];
+      if (cell) styleCell(cell, i, bg, 2);
+    }
+  });
 }
 
 function render() { renderNav(); renderFoot(); renderMain(); }
