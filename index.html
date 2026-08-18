@@ -65,14 +65,14 @@
   @media (max-width: 720px) {
     .app { flex-direction: column; }
     aside {
-      width: 100%; flex-direction: row; align-items: center; gap: 0;
+      width: 100%; flex-direction: column; align-items: stretch; gap: 8px;
       border-right: none; border-bottom: 1px solid var(--line);
-      padding: 10px 10px; overflow-x: auto; -webkit-overflow-scrolling: touch;
-      white-space: nowrap;
+      padding: 12px 10px;
     }
-    .brand { padding: 0 10px 0 4px; flex-shrink: 0; }
+    .brand { padding: 0 4px; flex-shrink: 0; }
     .brand p { display: none; }
-    nav { flex-direction: row; gap: 4px; flex-shrink: 0; }
+    .navrow { display: flex; align-items: center; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; gap: 4px; }
+    nav { flex-direction: row; gap: 4px; flex-shrink: 0; display: flex; }
     nav button { width: auto; padding: 8px 10px; white-space: nowrap; }
     nav button span:first-child { display: none; }
     .sep { width: 1px; height: 22px; margin: 0 6px; flex-shrink: 0; }
@@ -92,9 +92,11 @@
       <h1>İstihdam Eşleştirme</h1>
       <p>Takip Paneli</p>
     </div>
-    <nav id="nav"></nav>
-    <div class="sep"></div>
-    <button id="settingsBtn">⚙️&nbsp;&nbsp;Ayarlar</button>
+    <div class="navrow">
+      <nav id="nav"></nav>
+      <div class="sep"></div>
+      <button id="settingsBtn">⚙️&nbsp;&nbsp;Ayarlar</button>
+    </div>
     <div class="foot" id="footStatus">0/4 kaynak bağlı</div>
   </aside>
   <main>
