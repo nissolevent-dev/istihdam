@@ -55,11 +55,6 @@
   th { text-align: left; padding: 10px 14px; color: var(--muted); font-weight: 600; font-size: 11.5px; letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 1px solid var(--line); background: var(--surface2); white-space: nowrap; }
   td { padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
   tr:nth-child(even) { background: var(--surface); }
-
-  .split-table { display: flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; align-items: flex-start; }
-  .split-table table { width: auto; }
-  .fixed-part { flex-shrink: 0; border-right: 1px solid var(--line); }
-  .scroll-part { flex: 1; min-width: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
   .empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 56px 20px; color: var(--muted); text-align: center; }
   .empty .title { color: var(--paper); font-weight: 600; font-size: 15px; }
@@ -295,37 +290,22 @@ function renderResults() {
 
   document.getElementById('resultsCount').textContent = filtered.length + ' kayıt';
 
-  const cellHtml = (cell, ci) => {
-    if (ci === statusIdx) {
-      const tone = statusTone(cell);
-      if (!tone) return `<td style="color:var(--muted)">${esc(cell) || '—'}</td>`;
-      return `<td><span class="badge" style="background:${tone.color}1c;color:${tone.color};border:1px solid ${tone.color}40">${esc(cell)}</span></td>`;
-    }
-    return `<td>${esc(cell) || '—'}</td>`;
-  };
-
-  const FIXED_N = Math.min(5, d.headers.length);
-  const fixedHeaders = d.headers.slice(0, FIXED_N);
-  const scrollHeaders = d.headers.slice(FIXED_N);
-
-  let fixedBody = '', scrollBody = '';
+  let html = `<div class="tablewrap"><table><thead><tr>${d.headers.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>`;
   if (!filtered.length) {
-    fixedBody = `<tr><td colspan="${fixedHeaders.length}" style="text-align:center;padding:24px;color:var(--muted)">Kayıt bulunamadı</td></tr>`;
+    html += `<tr><td colspan="${d.headers.length}" style="text-align:center;padding:24px;color:var(--muted)">Kayıt bulunamadı</td></tr>`;
   } else {
     for (const row of filtered) {
-      fixedBody += '<tr>' + row.slice(0, FIXED_N).map((c, ci) => cellHtml(c, ci)).join('') + '</tr>';
-      if (scrollHeaders.length) {
-        scrollBody += '<tr>' + row.slice(FIXED_N).map((c, ci) => cellHtml(c, ci + FIXED_N)).join('') + '</tr>';
-      }
+      html += '<tr>' + row.map((cell, ci) => {
+        if (ci === statusIdx) {
+          const tone = statusTone(cell);
+          if (!tone) return `<td style="color:var(--muted)">${esc(cell) || '—'}</td>`;
+          return `<td><span class="badge" style="background:${tone.color}1c;color:${tone.color};border:1px solid ${tone.color}40">${esc(cell)}</span></td>`;
+        }
+        return `<td>${esc(cell) || '—'}</td>`;
+      }).join('') + '</tr>';
     }
   }
-
-  let html = `<div class="split-table">
-    <div class="fixed-part"><table><thead><tr>${fixedHeaders.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${fixedBody}</tbody></table></div>`;
-  if (scrollHeaders.length) {
-    html += `<div class="scroll-part"><table><thead><tr>${scrollHeaders.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${scrollBody}</tbody></table></div>`;
-  }
-  html += `</div>`;
+  html += '</tbody></table></div>';
   document.getElementById('resultsArea').innerHTML = html;
 }
 }
