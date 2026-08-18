@@ -18,15 +18,23 @@
     --rose: #C1666B; --wire: #6C8EBF;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--ink); color: var(--paper); font-family: -apple-system, 'Inter', sans-serif; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--ink); color: var(--paper); font-family: -apple-system, 'Inter', sans-serif;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
   .app { display: flex; min-height: 100vh; }
   aside { width: 240px; flex-shrink: 0; border-right: 1px solid var(--line); padding: 22px 14px; display: flex; flex-direction: column; gap: 4px; }
   .brand { padding: 0 10px 20px; }
   .brand h1 { font-size: 16.5px; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
   .brand p { font-size: 12px; color: var(--muted); margin: 2px 0 0; }
+  nav { display: flex; flex-direction: column; gap: 4px; }
   nav button { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 9px; background: transparent; border: none; cursor: pointer; color: var(--muted); font-size: 14px; font-weight: 500; text-align: left; width: 100%; font-family: inherit; }
   nav button.active { background: var(--surface2); color: var(--paper); font-weight: 600; }
-  nav button .dot { margin-left: auto; width: 6px; height: 6px; border-radius: 999px; background: var(--line); }
+  nav button .dot { margin-left: auto; width: 6px; height: 6px; border-radius: 999px; background: var(--line); flex-shrink: 0; }
   nav button .dot.on { background: var(--signal); }
   nav button .dot.err { background: var(--rose); }
   .sep { height: 1px; background: var(--line); margin: 10px 4px; }
@@ -35,12 +43,12 @@
   .headrow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; flex-wrap: wrap; gap: 10px; }
   h2 { font-size: 22px; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
   .sub { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
-  .btn { display: flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--line); color: var(--paper); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .btn { display: flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--line); color: var(--paper); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; flex-shrink: 0; }
   .btn:disabled { opacity: 0.6; cursor: default; }
-  .search-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-  .search-row input { flex: 1; max-width: 320px; background: var(--surface2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; color: var(--paper); font-size: 13.5px; outline: none; font-family: inherit; }
+  .search-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .search-row input { flex: 1; min-width: 140px; max-width: 320px; background: var(--surface2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; color: var(--paper); font-size: 13.5px; outline: none; font-family: inherit; }
   .count { font-size: 12.5px; color: var(--muted); white-space: nowrap; }
-  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; -webkit-overflow-scrolling: touch; }
   table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
   th { text-align: left; padding: 10px 14px; color: var(--muted); font-weight: 600; font-size: 11.5px; letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 1px solid var(--line); background: var(--surface2); white-space: nowrap; }
   td { padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
@@ -53,6 +61,28 @@
   .icon { width: 16px; height: 16px; flex-shrink: 0; }
   @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   .spinning { animation: spin 0.9s linear infinite; }
+
+  @media (max-width: 720px) {
+    .app { flex-direction: column; }
+    aside {
+      width: 100%; flex-direction: row; align-items: center; gap: 0;
+      border-right: none; border-bottom: 1px solid var(--line);
+      padding: 10px 10px; overflow-x: auto; -webkit-overflow-scrolling: touch;
+      white-space: nowrap;
+    }
+    .brand { padding: 0 10px 0 4px; flex-shrink: 0; }
+    .brand p { display: none; }
+    nav { flex-direction: row; gap: 4px; flex-shrink: 0; }
+    nav button { width: auto; padding: 8px 10px; white-space: nowrap; }
+    nav button span:first-child { display: none; }
+    .sep { width: 1px; height: 22px; margin: 0 6px; flex-shrink: 0; }
+    #settingsBtn { flex-shrink: 0; padding: 8px 10px; white-space: nowrap; }
+    .foot { display: none; }
+    main { padding: 16px 14px; }
+    h2 { font-size: 19px; }
+    .headrow { margin-bottom: 16px; }
+    td, th { padding: 8px 10px; }
+  }
 </style>
 </head>
 <body>
