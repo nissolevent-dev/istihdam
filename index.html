@@ -48,7 +48,7 @@
   .btn { display: flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--line); color: var(--paper); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; flex-shrink: 0; }
   .btn:disabled { opacity: 0.6; cursor: default; }
   .search-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
-  .search-row input { flex: 1; min-width: 140px; max-width: 320px; background: var(--surface2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; color: var(--paper); font-size: 13.5px; outline: none; font-family: inherit; }
+  .search-row input { flex: 1; min-width: 140px; max-width: 320px; background: var(--surface2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; color: var(--paper); font-size: 16px; outline: none; font-family: inherit; }
   .count { font-size: 12.5px; color: var(--muted); white-space: nowrap; }
   .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; -webkit-overflow-scrolling: touch; }
   table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
@@ -73,7 +73,7 @@
   .pw-box { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; width: 100%; max-width: 280px; text-align: center; }
   .pw-title { font-weight: 700; font-size: 15px; margin-bottom: 14px; }
   .pw-box input {
-    width: 100%; text-align: center; letter-spacing: 10px; font-size: 22px; padding: 10px 12px;
+    width: 100%; text-align: center; letter-spacing: 10px; font-size: max(22px, 16px); padding: 10px 12px;
     background: var(--surface2); border: 1px solid var(--line); border-radius: 8px; color: var(--paper);
     outline: none; font-family: inherit;
   }
@@ -268,16 +268,29 @@ function renderMain() {
     return;
   }
 
+  content.innerHTML = `<div class="search-row">
+    <input id="searchInput" placeholder="Ara..." value="${esc(state.query)}">
+    <div class="count" id="resultsCount"></div>
+  </div>
+  <div id="resultsArea"></div>`;
+
+  document.getElementById('searchInput').oninput = (e) => {
+    state.query = e.target.value;
+    renderResults();
+  };
+
+  renderResults();
+}
+
+function renderResults() {
+  const d = state.data[state.active];
   const statusIdx = findStatusCol(d.headers);
   const q = state.query.trim().toLocaleLowerCase('tr');
   const filtered = q ? d.rows.filter(r => r.some(c => (c || '').toString().toLocaleLowerCase('tr').includes(q))) : d.rows;
 
-  let html = `<div class="search-row">
-    <input id="searchInput" placeholder="Ara..." value="${esc(state.query)}">
-    <div class="count">${filtered.length} kayıt</div>
-  </div>`;
+  document.getElementById('resultsCount').textContent = filtered.length + ' kayıt';
 
-  html += `<div class="tablewrap"><table><thead><tr>${d.headers.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>`;
+  let html = `<div class="tablewrap"><table><thead><tr>${d.headers.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>`;
   if (!filtered.length) {
     html += `<tr><td colspan="${d.headers.length}" style="text-align:center;padding:24px;color:var(--muted)">Kayıt bulunamadı</td></tr>`;
   } else {
@@ -293,9 +306,7 @@ function renderMain() {
     }
   }
   html += '</tbody></table></div>';
-  content.innerHTML = html;
-
-  document.getElementById('searchInput').oninput = (e) => { state.query = e.target.value; renderMain(); };
+  document.getElementById('resultsArea').innerHTML = html;
 }
 
 function render() { renderNav(); renderFoot(); renderMain(); }
