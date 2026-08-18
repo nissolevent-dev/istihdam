@@ -38,7 +38,9 @@
   nav button .dot.on { background: var(--signal); }
   nav button .dot.err { background: var(--rose); }
   .sep { height: 1px; background: var(--line); margin: 10px 4px; }
-  .foot { margin-top: auto; padding: 14px 10px 0; font-size: 12px; color: var(--muted); }
+  .foot { padding: 14px 10px 0; font-size: 12px; color: var(--muted); }
+  .settings-desktop { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 9px; background: transparent; border: none; cursor: pointer; color: var(--muted); font-size: 14px; font-weight: 500; text-align: left; width: 100%; font-family: inherit; margin-top: auto; }
+  .settings-desktop:hover { background: var(--surface2); }
   main { flex: 1; padding: 28px 34px; min-width: 0; }
   .headrow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; flex-wrap: wrap; gap: 10px; }
   h2 { font-size: 22px; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
@@ -62,7 +64,26 @@
   @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   .spinning { animation: spin 0.9s linear infinite; }
 
+  .settings-mobile { display: none; }
+
+  .pw-overlay {
+    position: fixed; inset: 0; background: rgba(10,13,22,0.72); backdrop-filter: blur(2px);
+    display: flex; align-items: center; justify-content: center; z-index: 50; padding: 20px;
+  }
+  .pw-box { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; width: 100%; max-width: 280px; text-align: center; }
+  .pw-title { font-weight: 700; font-size: 15px; margin-bottom: 14px; }
+  .pw-box input {
+    width: 100%; text-align: center; letter-spacing: 10px; font-size: 22px; padding: 10px 12px;
+    background: var(--surface2); border: 1px solid var(--line); border-radius: 8px; color: var(--paper);
+    outline: none; font-family: inherit;
+  }
+  .pw-error { color: var(--rose); font-size: 12.5px; margin-top: 10px; }
+  .pw-actions { display: flex; gap: 8px; margin-top: 16px; }
+  .pw-actions .btn { flex: 1; justify-content: center; }
+  .btn-primary { background: var(--amber); color: #1a1408; border-color: var(--amber); }
+
   @media (max-width: 720px) {
+    body { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
     .app { flex-direction: column; }
     aside {
       width: 100%; flex-direction: column; align-items: stretch; gap: 8px;
@@ -71,13 +92,21 @@
     }
     .brand { padding: 0 4px; flex-shrink: 0; }
     .brand p { display: none; }
-    .navrow { display: flex; align-items: center; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; gap: 4px; }
-    nav { flex-direction: row; gap: 4px; flex-shrink: 0; display: flex; }
-    nav button { width: auto; padding: 8px 10px; white-space: nowrap; }
-    nav button span:first-child { display: none; }
-    .sep { width: 1px; height: 22px; margin: 0 6px; flex-shrink: 0; }
-    #settingsBtn { flex-shrink: 0; padding: 8px 10px; white-space: nowrap; }
+    .navrow { width: 100%; }
+    nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; width: 100%; }
+    nav button { width: 100%; flex-direction: column; gap: 4px; padding: 8px 4px; font-size: 10.5px; text-align: center; }
+    nav button span:first-child { font-size: 17px; }
+    nav button .dot { margin-left: 0; }
     .foot { display: none; }
+    .settings-desktop { display: none; }
+    .settings-mobile {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+      padding: 14px 14px calc(14px + env(safe-area-inset-bottom));
+      background: var(--surface); border-top: 1px solid var(--line);
+      color: var(--paper); font-size: 14px; font-weight: 600; border: none; border-top: 1px solid var(--line);
+      font-family: inherit;
+    }
     main { padding: 16px 14px; }
     h2 { font-size: 19px; }
     .headrow { margin-bottom: 16px; }
@@ -94,10 +123,9 @@
     </div>
     <div class="navrow">
       <nav id="nav"></nav>
-      <div class="sep"></div>
-      <button id="settingsBtn">⚙️&nbsp;&nbsp;Ayarlar</button>
     </div>
     <div class="foot" id="footStatus">0/4 kaynak bağlı</div>
+    <button id="settingsBtnDesktop" class="settings-desktop">⚙️&nbsp;&nbsp;Ayarlar</button>
   </aside>
   <main>
     <div class="headrow">
@@ -109,6 +137,20 @@
     </div>
     <div id="content"></div>
   </main>
+</div>
+
+<button id="settingsBtnMobile" class="settings-mobile">⚙️ Ayarlar</button>
+
+<div id="pwOverlay" class="pw-overlay" style="display:none">
+  <div class="pw-box">
+    <div class="pw-title">Ayarlar Şifresi</div>
+    <input id="pwInput" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="••••">
+    <div id="pwError" class="pw-error" style="display:none">Yanlış şifre</div>
+    <div class="pw-actions">
+      <button id="pwCancel" class="btn">Vazgeç</button>
+      <button id="pwSubmit" class="btn btn-primary">Gir</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -264,7 +306,9 @@ document.getElementById('refreshBtn').onclick = () => {
   fetchSheet(state.active);
 };
 
-document.getElementById('settingsBtn').onclick = () => {
+const SETTINGS_PASSWORD = '2580';
+
+function openSettings() {
   const content = document.getElementById('content');
   document.getElementById('pageTitle').textContent = 'Ayarlar';
   document.getElementById('pageSub').textContent = '';
@@ -278,7 +322,42 @@ document.getElementById('settingsBtn').onclick = () => {
   }
   content.innerHTML = html;
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-};
+}
+
+function askForSettingsPassword() {
+  const overlay = document.getElementById('pwOverlay');
+  const input = document.getElementById('pwInput');
+  const error = document.getElementById('pwError');
+  input.value = '';
+  error.style.display = 'none';
+  overlay.style.display = 'flex';
+  setTimeout(() => input.focus(), 50);
+
+  const cleanup = () => {
+    overlay.style.display = 'none';
+    document.getElementById('pwSubmit').onclick = null;
+    document.getElementById('pwCancel').onclick = null;
+    input.onkeydown = null;
+  };
+
+  const trySubmit = () => {
+    if (input.value === SETTINGS_PASSWORD) {
+      cleanup();
+      openSettings();
+    } else {
+      error.style.display = 'block';
+      input.value = '';
+      input.focus();
+    }
+  };
+
+  document.getElementById('pwSubmit').onclick = trySubmit;
+  document.getElementById('pwCancel').onclick = cleanup;
+  input.onkeydown = (e) => { if (e.key === 'Enter') trySubmit(); };
+}
+
+document.getElementById('settingsBtnDesktop').onclick = askForSettingsPassword;
+document.getElementById('settingsBtnMobile').onclick = askForSettingsPassword;
 
 render();
 fetchAll();
